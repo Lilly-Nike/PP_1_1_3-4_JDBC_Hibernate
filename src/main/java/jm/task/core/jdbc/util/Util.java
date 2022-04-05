@@ -1,7 +1,6 @@
 package jm.task.core.jdbc.util;
 
 import jm.task.core.jdbc.model.User;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -19,9 +18,9 @@ public class Util {
     private static final String USER = "root";
     private static final String PASSWORD = "root";
 
-    private static final SessionFactory SESSION_FACTORY;
+    private static final SessionFactory SESSION_FACTORY = createSessionFactory();
 
-    static {
+    private static SessionFactory createSessionFactory() {
         Configuration configuration = new Configuration();
         configuration.setProperties(properties());
         configuration.addAnnotatedClass(User.class);
@@ -29,8 +28,7 @@ public class Util {
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties()).build();
 
-        SESSION_FACTORY = configuration.buildSessionFactory(serviceRegistry);
-        Runtime.getRuntime().addShutdownHook(new Thread(SESSION_FACTORY::close));
+        return configuration.buildSessionFactory(serviceRegistry);
     }
 
     private static Properties properties() {
@@ -46,8 +44,8 @@ public class Util {
         return properties;
     }
 
-    public static Session getSession() {
-        return SESSION_FACTORY.openSession();
+    public static SessionFactory getSessionFactory() {
+        return SESSION_FACTORY;
     }
 
     public static Connection connection() {
@@ -58,4 +56,7 @@ public class Util {
         }
     }
 
+    public static void closeSessionFactory() {
+        SESSION_FACTORY.close();
+    }
 }
